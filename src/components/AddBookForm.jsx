@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { addBook, updateBook } from "../store/bookSlice";
+import { addBook, editBook } from "../store/bookSlice";
 import "./AddBookForm.css";
 
 const AddBookForm = ({ onClose, bookToEdit }) => {
   const [bookData, setBookData] = useState({
+    title: "",
     author: "",
     country: "",
     language: "",
     link: "",
     pages: "",
-    title: "",
     year: "",
   });
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
+   useEffect(() => {
     if (bookToEdit) {
-      setBookData(bookToEdit);
+      const { id, ...restData } = bookToEdit; 
+      setBookData(restData);
     }
   }, [bookToEdit]);
 
@@ -29,12 +30,13 @@ const AddBookForm = ({ onClose, bookToEdit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (bookToEdit) {
-      dispatch(updateBook(bookData)); 
+      dispatch(editBook({ id: bookToEdit.id, bookData })); 
     } else {
-      dispatch(addBook(bookData)); 
+      dispatch(addBook(bookData));
     }
     onClose();
   };
+  
 
   return (
     <div className="modal-overlay">

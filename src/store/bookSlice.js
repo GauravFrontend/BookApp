@@ -1,17 +1,32 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import bookService from "../api/bookService";
 
-export const fetchBooks = createAsyncThunk("books/fetchBooks", async ({ title, sort, page, limit }) => {
-    return await bookService.searchBooks(title, sort, page, limit);
+export const fetchBooks = createAsyncThunk("books/fetchBooks", async ({ title, sort, page, limit }, { rejectWithValue }) => {
+    try {
+        return await bookService.searchBooks(title, sort, page, limit);
+    } catch (error) {
+        return rejectWithValue(error.message);
+    }
 });
 
-export const addBook = createAsyncThunk("books/addBook", async (bookData) => {
-    return await bookService.addBook(bookData);
+export const addBook = createAsyncThunk("books/addBook", async (bookData, { rejectWithValue }) => {
+    try {
+        return await bookService.addBook(bookData);
+    } catch (error) {
+        return rejectWithValue(error.message);
+    }
 });
 
-export const editBook = createAsyncThunk("books/editBook", async ({ id, bookData }) => {
-    return await bookService.editBook(id, bookData);
+export const editBook = createAsyncThunk("books/editBook", async ({ id, bookData }, { rejectWithValue }) => {
+    try {
+        const response = await bookService.editBook(id, bookData);
+        return response;
+    } catch (error) {
+        console.error("❌ Update failed:", error.message);
+        return rejectWithValue(error.message);
+    }
 });
+
 
 const bookSlice = createSlice({
     name: "books",
@@ -24,18 +39,25 @@ const bookSlice = createSlice({
             })
             .addCase(fetchBooks.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                state.books = action.payload;
+                state.books = action.payload.data;
             })
             .addCase(fetchBooks.rejected, (state, action) => {
                 state.status = "failed";
-                state.error = action.error.message;
+                state.error = action.payload;
             })
             .addCase(addBook.fulfilled, (state, action) => {
-                state.books.push(action.payload);
+                state.books = [action.payload, ...state.books];
+            })
+            .addCase(addBook.rejected, (state, action) => {
+                state.error = action.payload;
             })
             .addCase(editBook.fulfilled, (state, action) => {
-                const index = state.books.findIndex(book => book.id === action.payload.id);
-                if (index !== -1) state.books[index] = action.payload;
+                state.books = state.books.map((book) =>
+                    book.id === action.payload.id ? action.payload : book
+                );
+            })
+            .addCase(editBook.rejected, (state, action) => {
+                state.error = action.payload;
             });
     },
 });

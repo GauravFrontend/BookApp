@@ -4,7 +4,7 @@ import AddBookForm from "./AddBookForm";
 
 const BookList = () => {
   const { books, status } = useSelector((state) => state.books);
-  const bookData = books?.data || [];
+  const bookData = books || [];
 
   const [editingBook, setEditingBook] = useState(null);
 
