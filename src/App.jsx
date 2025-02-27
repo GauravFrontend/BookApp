@@ -9,7 +9,6 @@ const App = () => {
     <Provider store={store}>
       <div className="app-container">
         <h1>Book Search</h1>
-        <BookSearch />
         <BookList />
       </div>
     </Provider>
